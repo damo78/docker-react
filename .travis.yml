@@ -1,15 +1,24 @@
-# require superuser level permissions and docker running
 sudo: required
 services:
   - docker
 
-# executed before tests run
 before_install:
   - docker build -t damo78/docker-react -f Dockerfile.dev .
 
-# command to run after build
-# default npm run test woud hang because usually interactive
-# -- --coverage exits back to command line
-# if any exit code other than 0, Travis identifies test fail
 script:
   - docker run damo78/docker-react npm run test -- --coverage
+
+# deploy to AWS
+deploy:
+  provider: elasticbeanstalk
+  region: "eu-west-2"
+  app: "docker-react"
+  env: "DockerReact-env"
+  bucket_name: "elasticbeanstalk-eu-west-2-303995393799"
+  bucket_path: "docker-react"
+  on:
+    branch: master
+
+  access_key_id: "$AWS_ACCESS_KEY"
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY"
